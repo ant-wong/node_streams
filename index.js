@@ -12,7 +12,6 @@ const lineSplit = new Transform({
   readableObjectMode: true,
 
   transform(chunk, encoding, callback) {
-    console.log(chunk.toString())
     this.push(chunk.toString().trim().split('\n\n'))
     callback()
   }
@@ -47,17 +46,34 @@ const arrayToObj = new Transform({
       )
       tempArr.push(obj)
     }
-    console.log(tempArr)
     this.push(tempArr)
     callback()
   }
 })
 
+// CONVERT THE OBJECTS (PLACED IN A TEMP ARRAY) INTO A READABLE STRING
+// PUSH THE RATE OF INPUT STREAM (BYTES/SECOND)
+
 const objToString = new Transform({
+  writableObjectMode: true,
+
   transform(chunk, encoding, callback) {
 
+    let byteSize = 0
+
+    for (let i = 0; i < chunk.length; i++) {
+      byteSize = byteSize += chunk[i].size
+      this.push(`\nDATA: ${chunk[i].data}. \nFILE SIZE: ${chunk[i].size} bytes. \nTIME ELAPSED: ${chunk[i].time} milliseconds. \nLINES OF DATA: ${chunk[i].lines}. \n`)
+    }
+
+    let seconds = ((chunk[chunk.length - 1].time) * 0.001)
+    this.push(`The rate of the input stream is: ${(byteSize / seconds).toFixed(4)} bytes/second`)
+    callback()
   }
 })
+
+// READS THE FILE INPUTTED INTO THE CLI
+// PIPES IT INTO THE STREAMS 
 
 process.stdin.on('readable', () => {
   let buf = process.stdin.read()
@@ -74,4 +90,5 @@ process.stdin.on('readable', () => {
 })
   .pipe(lineSplit)
   .pipe(arrayToObj)
-  // .pipe(process.stdout)
+  .pipe(objToString)
+  .pipe(process.stdout)
