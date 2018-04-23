@@ -6,6 +6,8 @@ Building Node streams that take in line separated text and converts to objects. 
 
 ### Clone/Download the repository and follow the steps to run streams
 
+**npm install** before running script.
+
 1. Run `tail -f -n +1 sample.txt | node index.js` to begin streams.
 2. While Node is running, edit the tail end of the **sample.txt** file.
 3. Terminal will stream live the new input while it's being outputed into a **outout.txt** file.
