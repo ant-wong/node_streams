@@ -1,5 +1,4 @@
 const { Transform } = require('stream')
-const fs = require('fs')
 // const fileName = process.argv[2]
 
 // START TIME (MS)
@@ -59,15 +58,19 @@ const objToString = new Transform({
 
   transform(chunk, encoding, callback) {
 
+    let hrend = process.hrtime(hrstart)
     let byteSize = 0
+    let totalLines = 0
+    let seconds = ((chunk[chunk.length - 1].time) * 0.001)
 
     for (let i = 0; i < chunk.length; i++) {
       byteSize = byteSize += chunk[i].size
+      totalLines = totalLines += chunk[i].lines
+      console.log(chunk[i].lines)
       this.push(`\nDATA: ${chunk[i].data}. \nFILE SIZE: ${chunk[i].size} bytes. \nTIME ELAPSED: ${chunk[i].time} milliseconds. \nLINES OF DATA: ${chunk[i].lines}. \n`)
     }
-
-    let seconds = ((chunk[chunk.length - 1].time) * 0.001)
-    this.push(`The rate of the input stream is: ${(byteSize / seconds).toFixed(4)} bytes/second`)
+  
+    this.push(`The rate of the input stream is: ${(byteSize / seconds).toFixed(4)} bytes/second \nTotal number of lines: ${totalLines} \nGrowth rate: ${(totalLines / seconds).toFixed(4)} lines/second.`)
     callback()
   }
 })
@@ -92,3 +95,9 @@ process.stdin.on('readable', () => {
   .pipe(arrayToObj)
   .pipe(objToString)
   .pipe(process.stdout)
+
+module.exports = {
+  lineSplit: lineSplit,
+  arrayToObj: arrayToObj,
+  objToString: objToString,
+}
