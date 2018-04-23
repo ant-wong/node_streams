@@ -1,4 +1,5 @@
 const { Transform } = require('stream')
+const fs = require('fs')
 // const fileName = process.argv[2]
 
 // START TIME (MS)
@@ -67,6 +68,14 @@ const objToString = new Transform({
       byteSize = byteSize += chunk[i].size
       totalLines = totalLines += chunk[i].lines
       console.log(chunk[i].lines)
+
+      // WRITE THE OUPUT TO FILE
+      fs.appendFile('./output.txt', `\nDATA: ${chunk[i].data}. \nFILE SIZE: ${chunk[i].size} bytes. \nTIME ELAPSED: ${chunk[i].time} milliseconds. \nLINES OF DATA: ${chunk[i].lines}. \n`, function(err) {
+        if(err) {
+          return console.log(err)
+        }
+        console.log('New data added')
+      })
       this.push(`\nDATA: ${chunk[i].data}. \nFILE SIZE: ${chunk[i].size} bytes. \nTIME ELAPSED: ${chunk[i].time} milliseconds. \nLINES OF DATA: ${chunk[i].lines}. \n`)
     }
   
